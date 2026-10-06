@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Seki Quest</string>
+    <string name="setup_message">On the computer, open Settings → Phone and turn Phone points on. Then scan the QR code it shows.</string>
+    <string name="scan">Scan QR code</string>
+    <string name="scan_again">Scan again</string>
+    <string name="try_again">Try again</string>
+    <string name="connecting">Connecting…</string>
+    <string name="unreachable">Can\'t reach the computer. Check that this phone\'s hotspot is on, the computer is connected to it, and Phone points is on.</string>
+    <string name="not_a_code">That isn\'t a Seki Quest code. Scan the QR code under Settings → Phone on the computer.</string>
+    <string name="scan_failed">The scanner couldn\'t start. You can also scan the code with the camera app, open the link, and share it to Seki Quest.</string>
+</resources>

@@ -1,0 +1,78 @@
+# Builds the APK on GitHub's machines whenever main changes (or on demand from the Actions tab).
+# The finished APK and the build log are published to the `builds` branch, replaced each time.
+name: Build the APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.3'
+
+      # The signing key lives in the repository's secrets, so every build is signed with the same key
+      # and a new APK installs over the old one.
+      - name: Signing key
+        env:
+          SIGNING_KEY_B64: ${{ secrets.SIGNING_KEY_B64 }}
+        run: |
+          if [ -n "$SIGNING_KEY_B64" ]; then
+            echo "$SIGNING_KEY_B64" | base64 -d > "$RUNNER_TEMP/signing.p12"
+            echo "SIGNING_KEY_FILE=$RUNNER_TEMP/signing.p12" >> "$GITHUB_ENV"
+          else
+            echo "::warning::No signing key in the secrets; this APK uses a throwaway debug key."
+          fi
+
+      - name: Build
+        env:
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        run: |
+          set -o pipefail
+          gradle --no-daemon assembleRelease --stacktrace 2>&1 | tee build.log
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -1)
+          "$ANDROID_HOME"/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner verify --print-certs "$APK" 2>&1 | tee -a build.log
+
+      - name: Publish to the builds branch
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+          STATUS: ${{ job.status }}
+        run: |
+          mkdir -p out
+          cp build.log out/ 2>/dev/null || echo "The build stopped before it started." > out/build.log
+          APK=$(ls app/build/outputs/apk/release/*.apk 2>/dev/null | head -1 || true)
+          if [ -n "$APK" ] && [ "$STATUS" = "success" ]; then
+            cp "$APK" out/seki-quest-phone.apk
+            (cd out && sha256sum seki-quest-phone.apk > seki-quest-phone.apk.sha256)
+          fi
+          echo "run ${GITHUB_RUN_NUMBER} ${GITHUB_SHA::7} ${STATUS}" > out/STATUS
+          cd out
+          git init -q -b builds
+          git add -A
+          git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" commit -q -m "Build ${GITHUB_RUN_NUMBER} (${GITHUB_SHA::7}): ${STATUS}"
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" builds
+
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: seki-quest-phone
+          path: app/build/outputs/apk/release/*.apk

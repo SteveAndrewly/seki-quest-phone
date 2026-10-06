@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Seki Quest on the PC is reached over plain HTTP on the local network (the phone's hotspot),
+     at an address that changes, so plain HTTP is allowed. Nothing goes to the internet. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

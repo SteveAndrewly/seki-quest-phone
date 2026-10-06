@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">セキ・クエスト</string>
+    <string name="setup_message">PCで「設定 → スマホ」を開き、「スマホでポイント」をオンにします。表示されたQRコードを読み取ってください。</string>
+    <string name="scan">QRコードを読み取る</string>
+    <string name="scan_again">読み取り直す</string>
+    <string name="try_again">もう一度試す</string>
+    <string name="connecting">接続しています…</string>
+    <string name="unreachable">PCに接続できません。このスマホのテザリングがオンになっているか、PCが接続しているか、「スマホでポイント」がオンになっているかを確認してください。</string>
+    <string name="not_a_code">セキ・クエストのコードではありません。PCの「設定 → スマホ」にあるQRコードを読み取ってください。</string>
+    <string name="scan_failed">読み取りを開始できませんでした。カメラアプリでコードを読み取ってリンクを開き、セキ・クエストに共有することもできます。</string>
+</resources>
